@@ -1,0 +1,20 @@
+{
+  "private": true,
+  "author": "jiangwei <jiangwei.feewee.cn>",
+  "scripts": {
+    "dev": "umi dev",
+    "build": "umi build",
+    "postinstall": "umi setup",
+    "setup": "umi setup",
+    "start": "npm run dev"
+  },
+  "dependencies": {
+    "echarts": "^5.6.0",
+    "umi": "^4.4.10"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.33",
+    "@types/react-dom": "^18.0.11",
+    "typescript": "^5.0.3"
+  }
+}
