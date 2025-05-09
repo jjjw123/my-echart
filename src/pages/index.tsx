@@ -1,150 +1,178 @@
-import type { EChartsOption, ECharts } from 'echarts';
+import type { EChartsOption } from 'echarts';
 import * as echarts from 'echarts';
-import { useEffect, useRef } from 'react';
-import styles from './index.less';
+import { useEffect } from 'react';
 import mapJson from '@/assets/SC.json';
-
-export type Chart = ECharts;
+import styles from './index.less';
 
 function HomePage() {
-  const divRef = useRef < any > (null);
-  const chartRef = useRef < Chart > (null);
-
   const geoCoordMap = [
-    {
-      num: 20,
-      name: '成都'
-    }
-  ]
-  const option: EChartsOption = {
-    series: [
-      {
-        name: '',
-        type: 'scatter',
-        symbol: "image://./img/titleBg.png",
-        coordinateSystem: 'geo',
-        color: ['#000'],
-        symbolSize: [178, 50],
-        symbolOffset: [0, "-50%"],
-        label: {
-          show: true,
-          padding: [0, 0, 0, 0],
-          formatter: function (param) {
-            return "{a | " + '' + "}" + " " + "{b | " + '' + "}";
-          },
-          rich: {
-            a: {
-              color: "#fff",
-              fontWeight: "bold",
-              fontSize: 16,
-              width: 89,
-              align: "center",
-              padding: [0, 0, 0, 10]
-            },
-            b: {
-              fontSize: 20,
-              color: "#819FD",
-              fontFamily: "PangMenZhengDao",
-              fontWeight: "bold",
-              width: 89,
-              align: "center",
-              padding: [0, 0, 0, -30]
-            }
-          }
-        },
-        data: geoCoordMap,
-      }, {
-        name: '',
-        type: 'scatter',
-        symbol: "image://./img/light.png",
-        coordinateSystem: 'geo',
-        symbolSize: [54, 47],
-        symbolOffset: [0, 10],
-        color: ['#000'],
-        tooltip: {
-          position: "right",
-          color: "#000",
-          formatter(d) {
-            // console.log(d)
-            return `<div style="padding: 5px 10px;">【${d.data.name}】</div>`;
-          },
-        },
-        label: {
-          show: false
-        },
-
-        data: geoCoordMap,
-      }
-
-    ],
-    geo: {
-      left: 0,
-      top: 0,
-      right: 0,
-      bottom: 0,
-      show: true,
-      map: 'scMap',
-      type: 'map',
-      // mapType: "",
-      roam: false,
-      zoom: 0.8,
-      label: {
-        show: false
-      },
-      itemStyle: {
-        areaColor: {
-          // image: createImg, // 支持为 HTMLImageElement, HTMLCanvasElement，不支持路径字符串
-          repeat: 'no-repeat'
-        },
-      },
-      emphasis: {
-        disabled: false,
-        itemStyle: {
-          areaColor: {
-            // image: createImg, // 支持为 HTMLImageElement, HTMLCanvasElement，不支持路径字符串
-            repeat: 'no-repeat'
-          },
-        },
-        label: {
-          show: false
-        }
-      }
-    }
-  };
+    { name: '成都', value: [104.065735, 30.659462], data1: '200TB' },
+    { name: '德阳', value: [104.398651, 31.127991], data1: '20TB' },
+    { name: '绵阳', value: [104.741722, 31.46402], data1: '300TB' },
+  ];
 
   useEffect(() => {
-    const chart = createChart();
-    function resizeChart() {
-      if (chart) {
-        chart.resize();
-        // @ts-ignore
-        echarts.registerMap('scMap', mapJson)
-        chart.setOption(option);
-      }
-    }
-    console.log(echarts, 'echarts')
-    window.addEventListener('resize', resizeChart);
-    return () => {
-      window.removeEventListener('resize', resizeChart);
-    };
+    createChart()
   }, []);
 
   function createChart() {
-    if ((!chartRef || !chartRef.current) && echarts) {
-      const width = window.document.getElementById('main')?.clientWidth;
-      const height = window.document.getElementById('main')?.clientHeight;
-      console.log(width, height)
-      // @ts-ignore
-      chartRef.current = echarts.init(divRef.current, undefined, {
-        devicePixelRatio: window.devicePixelRatio,
-        width,
-        height,
-      });
-    }
-    return chartRef.current;
+    const width = window.document.getElementById('main')?.clientWidth;
+    const height = window.document.getElementById('main')?.clientHeight;
+    // @ts-ignore
+    echarts.registerMap('scMap', mapJson);
+    // @ts-ignore
+    const myCharts = echarts.init(document.getElementById('main'), undefined, {
+      devicePixelRatio: window.devicePixelRatio,
+      width,
+      height: 600,
+    });
+    const option: EChartsOption = {
+      tooltip: {
+        trigger: 'item',
+        show: true,
+        confine: true,
+        backgroundColor: 'rgba(51, 51, 51, 0.8)',
+        textStyle: {
+          color: '#fff',
+          fontSize: 12
+        },
+        formatter: function (params: any) {
+          return (
+            `<div style={{display: 'flex', alignItems: 'center'}}>
+              <div>
+                ${params.data.name}
+              </div>
+              <div>
+                <div>数据项：${params.data.data1}</div>
+                <div>数据体量：${params.data.data1}</div>
+              </div>
+            </div>`
+          )
+        }
+      },
+      series: [
+        {
+          type: "effectScatter",
+          coordinateSystem: "geo",
+          showEffectOn: "render",
+          data: geoCoordMap,
+          rippleEffect: {
+            brushType: "stroke",
+            scale: 5,
+            period: 2, // 秒数
+          },
+          symbolSize: 12,
+          zlevel: 1,
+          label: {
+            formatter: "{b}",
+            position: "right",
+            show: true,
+            color: '#0f5d9d'
+          },
+        }
+      ],
+      geo: [
+        {
+          map: 'scMap',
+          z: 3,
+          aspectScale: 0.85,
+          selectedMode: "single",// 开启单选
+          label: {
+            show: false,
+          },
+          roam: false,
+          itemStyle: {
+            areaColor: "#03365b",
+            borderColor: "#4bf3f9",
+            // shadowBlur: 3,
+            shadowColor: '#4bf3f9', //阴影颜色
+            // shadowOffsetX: 0, //阴影偏移量
+            // shadowOffsetY: 10, //阴影偏移量
+          },
+          emphasis: {
+            label: {
+              show: true,
+              color: '#ffffff',
+            },
+            itemStyle: {
+              areaColor: "#0f5d9d",
+            }
+          }
+        },
+        {
+          map: 'scMap',
+          z: 2,
+          aspectScale: 0.85,
+          selectedMode: "single",// 开启单选
+          label: {
+            show: false,
+          },
+          roam: false,
+          itemStyle: {
+            borderColor: '#d8feff',
+            borderWidth: 3,
+            // shadowBlur: 10,
+            shadowColor: '#22a1ff',
+            areaColor: '#0862db',
+            shadowOffsetX: -5,
+            shadowOffsetY: 8
+          },
+          emphasis: {
+            disabled: true
+          }
+        },
+        {
+          map: 'scMap',
+          z: 1,
+          aspectScale: 0.85,
+          selectedMode: "single",// 开启单选
+          label: {
+            show: false,
+          },
+          roam: false,
+          itemStyle: {
+            borderColor: '#c8feff',
+            borderWidth: 1,
+            // shadowBlur: 0,
+            shadowColor: '#99c4ff',
+            areaColor: '#4ebaff',
+          },
+          emphasis: {
+            disabled: true
+          }
+        },
+        {
+          map: 'scMap',
+          z: 0,
+          aspectScale: 0.85,
+          selectedMode: "single",// 开启单选
+          label: {
+            show: false,
+          },
+          roam: false,
+          itemStyle: {
+            borderColor: '#66edff',
+            borderWidth: 2,
+            // shadowBlur: 20,
+            shadowColor: '#4d99ff',
+            areaColor: '#1752ad',
+            shadowOffsetX: -5,
+            shadowOffsetY: 8
+          },
+          emphasis: {
+            disabled: true
+          }
+        }
+      ],
+    };
+    myCharts.setOption(option)
   }
 
-  return <div id="main" ref={divRef} className={styles.container} />;
+  return (
+    <div className={styles.container}>
+      <div id="main" />
+    </div>
+  );
 }
 
 export default HomePage;
